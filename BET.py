@@ -2,8 +2,8 @@ import discord
 from os import path
 import SETUP
 
-if not path.exists("PARAMETERS.py"):
-    # Parameters need to be generated
+if not (path.exists("PARAMETERS.py") or SETUP.parameters_sanitary()) :
+    # Parameters need to be generated/regenerated
     SETUP.generate_parameters()
 
 import PARAMETERS
