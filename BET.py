@@ -1,4 +1,5 @@
 import discord
+import SETUP
 
 client = discord.Client()
 
