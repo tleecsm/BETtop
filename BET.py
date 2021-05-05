@@ -1,5 +1,12 @@
 import discord
+from os import path
 import SETUP
+
+if not path.exists("PARAMETERS.py"):
+    # Parameters need to be generated
+    SETUP.generate_parameters()
+
+import PARAMETERS
 
 client = discord.Client()
 
@@ -15,4 +22,4 @@ async def on_message(message):
     if message.content.startswith('$hello'):
         await message.channel.send('Hello!')
 
-client.run('bot token here')
+client.run(PARAMETERS.BOT_TOKEN)

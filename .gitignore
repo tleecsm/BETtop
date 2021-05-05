@@ -1,2 +1,4 @@
 PARAMETERS.py
 .idea
+*pycache*
+venv
