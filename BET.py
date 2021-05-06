@@ -1,7 +1,6 @@
 import discord
 from os import path
 import SETUP
-import MESSAGE
 
 print('!STARTING BETtop!')
 
@@ -10,7 +9,9 @@ if (not path.exists("PARAMETERS.py")) or (not SETUP.parameters_sanitary()):
     print('!PARAMETERS NOT FOUND OR UNSANITARY!')
     SETUP.generate_parameters()
 
+# These need to be imported after the above check
 import PARAMETERS
+import MESSAGE
 
 client = discord.Client()
 
@@ -22,7 +23,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    if message.author == client.user:
+    if message.author.bot:
         return
     await MESSAGE.handler(message)
 
