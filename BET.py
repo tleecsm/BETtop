@@ -1,4 +1,6 @@
 import discord
+import datetime
+import asyncio
 from os import path
 import SETUP
 
@@ -12,6 +14,7 @@ if (not path.exists("PARAMETERS.py")) or (not SETUP.parameters_sanitary()):
 # These need to be imported after the above check
 import PARAMETERS
 import MESSAGE
+import IRS
 
 client = discord.Client()
 
@@ -27,4 +30,22 @@ async def on_message(message):
         return
     await MESSAGE.handler(message)
 
+
+async def daily_tasks():
+    while True:
+        try:
+            # target_time = tomorrow at midnight
+            target_time = datetime.datetime.utcnow().replace(
+                hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
+            current_time = datetime.datetime.utcnow()
+            time_to_midnight = target_time - current_time
+            time_to_midnight = time_to_midnight.total_seconds()
+            await asyncio.sleep(time_to_midnight)
+            print('!CALLING IRS TO START DAILY MANAGEMENT!')
+            IRS.daily_management()
+        except Exception as e:
+            print(f'!ERROR HAS OCCURRED WITHIN DAILY LOOP!\n{e}')
+            print('!RESTARTING DAILY LOOP!')
+
+client.loop.create_task(daily_tasks())
 client.run(PARAMETERS.BOT_TOKEN)

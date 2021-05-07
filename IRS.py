@@ -141,6 +141,9 @@ async def enroll(message):
 
     await message.channel.send(f'YOUR ACCOUNT HAS BEEN OPENED.')
 
+def daily_management():
+    pass
+
 IRS_COMMANDS = {
         'WATCH_CHANNEL': watch_channel,
         'FORGET_CHANNEL': forget_channel,

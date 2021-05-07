@@ -21,7 +21,7 @@ def generate_parameters():
     parameters.append(f'USER_ID_POSITION = 0')
     parameters.append(f'USER_CURRENCY_POSITION = 1')
     parameters.append(f'USER_MAX_POSITION = 2')
-with open('PARAMETERS.py', 'w') as P:
+    with open('PARAMETERS.py', 'w') as P:
         P.writelines(parameters)
 
 
