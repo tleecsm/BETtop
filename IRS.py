@@ -15,7 +15,10 @@ async def handler(message):
                 return
             if message_split[1] in IRS_COMMANDS:
                 await IRS_COMMANDS[message_split[1]](message)
+    generate_income(message)
 
+
+async def generate_income(message):
     with open('IRS_FORM.csv', newline='') as form:
         IRS_form = list(csv.reader(form, delimiter=','))
 
