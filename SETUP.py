@@ -5,9 +5,9 @@ EXPECTED_PARAMETERS = {
     "DAILY_CURRENCY": "DAILY CURRENCY",
     "DAILY_CURRENCY_MAX": "DAILY CURRENCY MAX",
     "UNIQUE_CHANNEL_AWARD": "UNIQUE CHANNEL AWARD",
-    "REPEAT_CHANNEL_AWARD": "REPEAT CHANNEL AWARD", 
-    "REPEAT_CHANNEL_DIMINISH": "REPEAT CHANNEL DIMINISH",  
-    "ENROLL_AWARD": "ENROLL AWARD", 
+    "REPEAT_CHANNEL_AWARD": "REPEAT CHANNEL AWARD",
+    "REPEAT_CHANNEL_DIMINISH": "REPEAT CHANNEL DIMINISH",
+    "ENROLL_AWARD": "ENROLL AWARD",
 }
 
 
@@ -17,7 +17,11 @@ def generate_parameters():
     for key in EXPECTED_PARAMETERS:
         parameter = f'{key} = "{input(f"PLEASE ENTER YOUR {EXPECTED_PARAMETERS[key]}: ")}"\n'
         parameters.append(parameter)
-    with open('PARAMETERS.py', 'w') as P:
+    # Add additional non-user defined parameters
+    parameters.append(f'USER_ID_POSITION = 0')
+    parameters.append(f'USER_CURRENCY_POSITION = 1')
+    parameters.append(f'USER_MAX_POSITION = 2')
+with open('PARAMETERS.py', 'w') as P:
         P.writelines(parameters)
 
 

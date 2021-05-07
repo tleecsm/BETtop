@@ -1,28 +1,67 @@
 import PARAMETERS
 import csv
 
+
 async def handler(message):
     if message.content.startswith(f'{PARAMETERS.COMMAND_PREFIX}IRS'):
         message_split = message.content.split()
         # Check if this is an IRS command
         if len(message_split) < 2:
-                return
+            return
         if message_split[1] == 'ENROLL':
             await enroll(message)
-        elif (message.author.guild_permissions.administrator):
+        elif message.author.guild_permissions.administrator:
             if len(message_split) < 3:
                 return
             if message_split[1] in IRS_COMMANDS:
                 await IRS_COMMANDS[message_split[1]](message)
-    # Check if message is in a legal channel
-    # Check if user has posted in this channel today
-    
+
+    with open('IRS_FORM.csv', newline='') as form:
+        IRS_form = list(csv.reader(form, delimiter=','))
+
+    # Check if message is from a legal user
+    legal_users = [row[PARAMETERS.USER_ID_POSITION] for row in IRS_form]
+    if str(message.author.id) in legal_users:
+        # Check if message is in a legal channel
+        if str(message.channel.id) in IRS_form[0]:
+            # Grab their award for the post
+            user_position = legal_users.index(str(message.author.id))
+            channel_position = IRS_form[0].index(str(message.channel.id))
+            award = IRS_form[user_position][channel_position]
+
+            # Reduce their next award for this channel
+            if award == PARAMETERS.UNIQUE_CHANNEL_AWARD:
+                # This was their first post of the day here
+                IRS_form[user_position][channel_position] = PARAMETERS.REPEAT_CHANNEL_AWARD
+            elif 0 < award <= PARAMETERS.REPEAT_CHANNEL_AWARD:
+                # This is not their first post
+                IRS_form[user_position][channel_position] -= PARAMETERS.REPEAT_CHANNEL_DIMINISH
+            else:
+                # They've hit their max posts in this channel
+                return
+
+            # Check their daily max
+            current_profit = IRS_form[user_position][PARAMETERS.USER_MAX_POSITION]
+            if current_profit < PARAMETERS.DAILY_CURRENCY_MAX:
+                current_profit += award
+                if current_profit > PARAMETERS.DAILY_CURRENCY_MAX:
+                    # Do not let them exceed the max daily income
+                    current_profit = PARAMETERS.DAILY_CURRENCY_MAX
+                IRS_form[user_position][PARAMETERS.USER_MAX_POSITION] = current_profit
+                with open('IRS_FORM.csv', 'w', newline='') as form:
+                    IRS_writer = csv.writer(form, delimiter=',')
+                    IRS_writer.writerows(IRS_form)
+            else:
+                # They've hit the max daily income
+                return
+
+
 async def watch_channel(message):
     message_split = message.content.split()[2:]
     IRS_form = []
     with open('IRS_FORM.csv', newline='') as form:
         IRS_form = list(csv.reader(form, delimiter=','))
-    
+
     for channel in message_split:
         # Sanitize the input
         channel = channel[2:-1]
@@ -47,13 +86,13 @@ async def watch_channel(message):
                                f'I AM CURRENTLY WATCHING THESE CHANNELS:\n' +
                                current_channel_string)
 
-    
+
 async def forget_channel(message):
     message_split = message.content.split()[2:]
     IRS_form = []
     with open('IRS_FORM.csv', newline='') as form:
         IRS_form = list(csv.reader(form, delimiter=','))
-    
+
     for channel in message_split:
         # Sanitize the input
         channel = channel[2:-1]
@@ -77,7 +116,7 @@ async def forget_channel(message):
     await message.channel.send(f'UPDATED MY WATCHLIST.  ' + 
                                f'I AM CURRENTLY WATCHING THESE CHANNELS:\n' +
                                current_channel_string)
-    
+
 
 async def enroll(message):
     user = str(message.author.id)
@@ -89,11 +128,11 @@ async def enroll(message):
     for row in IRS_form:
         if user in row:
             return
-    
+
     # Add the user to the form
     new_user_row = ([user, PARAMETERS.ENROLL_AWARD] + 
                     [PARAMETERS.UNIQUE_CHANNEL_AWARD for i in range(len(IRS_form[0])-2)])
-    
+
     IRS_form.append(new_user_row)
 
     with open('IRS_FORM.csv', 'w', newline='') as form:
