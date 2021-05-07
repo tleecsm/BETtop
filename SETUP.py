@@ -29,6 +29,12 @@ def parameters_sanitary():
     print('!CHECKING FOR SANITARY PARAMETERS!')
     with open('PARAMETERS.py', 'r') as P:
         parameters = P.readlines()
+
+    # Update with the nonuser defined parameters
+    EXPECTED_PARAMETERS['USER_ID_POSITION'] = None
+    EXPECTED_PARAMETERS['USER_CURRENCY_POSITION'] = None
+    EXPECTED_PARAMETERS['USER_MAX_POSITION'] = None
+    
     if len(EXPECTED_PARAMETERS) != len(parameters):
         return False
     for i in range(len(parameters)):
