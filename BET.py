@@ -43,6 +43,7 @@ async def daily_tasks():
             await asyncio.sleep(time_to_midnight)
             print('!CALLING IRS TO START DAILY MANAGEMENT!')
             IRS.daily_management()
+            print('!DAILY MANAGEMENT CONCLUDED!')
         except Exception as e:
             print(f'!ERROR HAS OCCURRED WITHIN DAILY LOOP!\n{e}')
             print('!RESTARTING DAILY LOOP!')

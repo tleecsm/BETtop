@@ -21,6 +21,7 @@ def generate_parameters():
     parameters.append(f'USER_ID_POSITION = 0')
     parameters.append(f'USER_CURRENCY_POSITION = 1')
     parameters.append(f'USER_MAX_POSITION = 2')
+    parameters.append(f'USER_ALL_TIME_CURRENCY = 3')
     with open('PARAMETERS.py', 'w') as P:
         P.writelines(parameters)
 
@@ -34,6 +35,7 @@ def parameters_sanitary():
     EXPECTED_PARAMETERS['USER_ID_POSITION'] = None
     EXPECTED_PARAMETERS['USER_CURRENCY_POSITION'] = None
     EXPECTED_PARAMETERS['USER_MAX_POSITION'] = None
+    EXPECTED_PARAMETERS['USER_ALL_TIME_CURRENCY'] = None
     
     if len(EXPECTED_PARAMETERS) != len(parameters):
         return False

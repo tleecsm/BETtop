@@ -133,7 +133,7 @@ async def enroll(message):
             return
 
     # Add the user to the form
-    new_user_row = ([user, PARAMETERS.ENROLL_AWARD] + 
+    new_user_row = ([user, PARAMETERS.ENROLL_AWARD, PARAMETERS.ENROLL_AWARD] + 
                     [PARAMETERS.UNIQUE_CHANNEL_AWARD for i in range(len(IRS_form[0])-2)])
 
     IRS_form.append(new_user_row)
@@ -145,7 +145,29 @@ async def enroll(message):
     await message.channel.send(f'YOUR ACCOUNT HAS BEEN OPENED.')
 
 def daily_management():
-    pass
+    # This function handles all daily tasks (run at UTC Midnight)
+    IRS_form = []
+    with open('IRS_FORM.csv', newline='') as form:
+        IRS_form = list(csv.reader(form, delimiter=','))
+
+    for i in range(1,len(IRS_form)):
+        # Add daily pay
+        user_row = IRS_form[i]
+        user_row[PARAMETERS.USER_CURRENCY_POSITION] += PARAMETERS.DAILY_CURRENCY
+        user_row[PARAMETERS.USER_ALL_TIME_CURRENCY] += PARAMETERS.DAILY_CURRENCY
+        # Add payout from yesterday
+        user_row[PARAMETERS.USER_CURRENCY_POSITION] += user_row[PARAMETERS.USER_MAX_POSITION]
+        user_row[PARAMETERS.USER_ALL_TIME_CURRENCY] += user_row[PARAMETERS.USER_MAX_POSITION]
+        # Reset payout for today
+        user_row[PARAMETERS.USER_MAX_POSITION] = 0
+        for j in range(PARAMETERS.USER_ALL_TIME_CURRENCY+1, len(user_row)):
+            user_row[j] = PARAMETERS.UNIQUE_CHANNEL_AWARD
+        IRS_form[i] = user_row
+
+    with open('IRS_FORM.csv', 'w', newline='') as form:
+        IRS_writer = csv.writer(form, delimiter=',')
+        IRS_writer.writerows(IRS_form)
+
 
 IRS_COMMANDS = {
         'WATCH_CHANNEL': watch_channel,
