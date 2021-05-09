@@ -133,7 +133,7 @@ async def enroll(message):
             return
 
     # Add the user to the form
-    #TODO DO NOT HARDCODE THESE POSITIONS
+    #TODO: DO NOT HARDCODE THESE POSITIONS
     new_user_row = ([user, PARAMETERS.ENROLL_AWARD, 0, PARAMETERS.ENROLL_AWARD] + 
                     [PARAMETERS.UNIQUE_CHANNEL_AWARD for i in range(len(IRS_form[0])-4)])
 
