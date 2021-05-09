@@ -2,4 +2,3 @@ PARAMETERS.py
 .idea
 *pycache*
 venv
-*csv
