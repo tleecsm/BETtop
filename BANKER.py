@@ -65,7 +65,24 @@ async def current(message):
 
 
 async def account(message):
-    pass
+    message_split = message.content.split()
+    if len(message_split) < 3:
+            return
+    if message_split[2] in ACCOUNT_COMMANDS:
+            await ACCOUNT_COMMANDS[message_split[2]](message)  
+
+
+async def wallet(message):
+    user_id = str(message.author.id) 
+    IRS_form = []
+    with open('IRS_FORM.csv', newline='') as form:
+        IRS_form = list(csv.reader(form, delimiter=','))
+    for user_row in IRS_form:
+        if user_id in user_row:
+            user_currency = user_row[PARAMETERS.USER_CURRENCY_POSITION]
+            legacy_currency = user_row[PARAMETERS.USER_ALL_TIME_CURRENCY]
+    output_string = f'USER WALLET:\nCURRENT WALLET: {user_currency} {PARAMETERS.CURRENCY_NAME}\nLIFETIME: {legacy_currency} {PARAMETERS.CURRENCY_NAME}\n'
+    await message.channel.send(output_string)
 
 
 BANKER_COMMANDS = {
@@ -79,5 +96,5 @@ LEADERBOARD_COMMANDS = {
 }
 
 ACCOUNT_COMMANDS = {
-        'WALLET': all_time,
+        'WALLET': wallet,
 }
