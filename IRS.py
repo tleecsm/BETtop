@@ -18,7 +18,7 @@ async def handler(message):
     generate_income(message)
 
 
-async def generate_income(message):
+def generate_income(message):
     with open('IRS_FORM.csv', newline='') as form:
         IRS_form = list(csv.reader(form, delimiter=','))
 
@@ -30,26 +30,26 @@ async def generate_income(message):
             # Grab their award for the post
             user_position = legal_users.index(str(message.author.id))
             channel_position = IRS_form[0].index(str(message.channel.id))
-            award = IRS_form[user_position][channel_position]
+            award = int(IRS_form[user_position][channel_position])
 
             # Reduce their next award for this channel
-            if award == PARAMETERS.UNIQUE_CHANNEL_AWARD:
+            if award == int(PARAMETERS.UNIQUE_CHANNEL_AWARD):
                 # This was their first post of the day here
-                IRS_form[user_position][channel_position] = PARAMETERS.REPEAT_CHANNEL_AWARD
-            elif 0 < award <= PARAMETERS.REPEAT_CHANNEL_AWARD:
+                IRS_form[user_position][channel_position] = int(PARAMETERS.REPEAT_CHANNEL_AWARD)
+            elif 0 < award <= int(PARAMETERS.REPEAT_CHANNEL_AWARD):
                 # This is not their first post
-                IRS_form[user_position][channel_position] -= PARAMETERS.REPEAT_CHANNEL_DIMINISH
+                IRS_form[user_position][channel_position] = int(IRS_form[user_position][channel_position]) - int(PARAMETERS.REPEAT_CHANNEL_DIMINISH)
             else:
                 # They've hit their max posts in this channel
                 return
 
             # Check their daily max
-            current_profit = IRS_form[user_position][PARAMETERS.USER_MAX_POSITION]
-            if current_profit < PARAMETERS.DAILY_CURRENCY_MAX:
+            current_profit = int(IRS_form[user_position][PARAMETERS.USER_MAX_POSITION])
+            if current_profit < int(PARAMETERS.DAILY_CURRENCY_MAX):
                 current_profit += award
-                if current_profit > PARAMETERS.DAILY_CURRENCY_MAX:
+                if current_profit > int(PARAMETERS.DAILY_CURRENCY_MAX):
                     # Do not let them exceed the max daily income
-                    current_profit = PARAMETERS.DAILY_CURRENCY_MAX
+                    current_profit = int(PARAMETERS.DAILY_CURRENCY_MAX)
                 IRS_form[user_position][PARAMETERS.USER_MAX_POSITION] = current_profit
                 with open('IRS_FORM.csv', 'w', newline='') as form:
                     IRS_writer = csv.writer(form, delimiter=',')
@@ -82,7 +82,7 @@ async def watch_channel(message):
         IRS_writer.writerows(IRS_form)
 
     current_channel_string = ''
-    for channel in IRS_form[0][2:]:
+    for channel in IRS_form[0][PARAMETERS.USER_ALL_TIME_CURRENCY+1:]:
         current_channel_string += f'<#{channel}>'
 
     await message.channel.send(f'UPDATED MY WATCHLIST.  ' + 
@@ -113,7 +113,7 @@ async def forget_channel(message):
         IRS_writer.writerows(IRS_form)
 
     current_channel_string = ''
-    for channel in IRS_form[0][2:]:
+    for channel in IRS_form[0][PARAMETERS.USER_ALL_TIME_CURRENCY+1:]:
         current_channel_string += f'<#{channel}>'
 
     await message.channel.send(f'UPDATED MY WATCHLIST.  ' + 
@@ -133,8 +133,9 @@ async def enroll(message):
             return
 
     # Add the user to the form
-    new_user_row = ([user, PARAMETERS.ENROLL_AWARD, PARAMETERS.ENROLL_AWARD] + 
-                    [PARAMETERS.UNIQUE_CHANNEL_AWARD for i in range(len(IRS_form[0])-2)])
+    #TODO DO NOT HARDCODE THESE POSITIONS
+    new_user_row = ([user, PARAMETERS.ENROLL_AWARD, 0, PARAMETERS.ENROLL_AWARD] + 
+                    [PARAMETERS.UNIQUE_CHANNEL_AWARD for i in range(len(IRS_form[0])-4)])
 
     IRS_form.append(new_user_row)
 
@@ -153,11 +154,11 @@ def daily_management():
     for i in range(1,len(IRS_form)):
         # Add daily pay
         user_row = IRS_form[i]
-        user_row[PARAMETERS.USER_CURRENCY_POSITION] += PARAMETERS.DAILY_CURRENCY
-        user_row[PARAMETERS.USER_ALL_TIME_CURRENCY] += PARAMETERS.DAILY_CURRENCY
+        user_row[PARAMETERS.USER_CURRENCY_POSITION] = int(user_row[PARAMETERS.USER_CURRENCY_POSITION]) + int(PARAMETERS.DAILY_CURRENCY)
+        user_row[PARAMETERS.USER_ALL_TIME_CURRENCY] = int(user_row[PARAMETERS.USER_ALL_TIME_CURRENCY]) + int(PARAMETERS.DAILY_CURRENCY)
         # Add payout from yesterday
-        user_row[PARAMETERS.USER_CURRENCY_POSITION] += user_row[PARAMETERS.USER_MAX_POSITION]
-        user_row[PARAMETERS.USER_ALL_TIME_CURRENCY] += user_row[PARAMETERS.USER_MAX_POSITION]
+        user_row[PARAMETERS.USER_CURRENCY_POSITION] = int(user_row[PARAMETERS.USER_CURRENCY_POSITION]) + int(user_row[PARAMETERS.USER_MAX_POSITION])
+        user_row[PARAMETERS.USER_ALL_TIME_CURRENCY] = int(user_row[PARAMETERS.USER_ALL_TIME_CURRENCY]) + int(user_row[PARAMETERS.USER_MAX_POSITION])
         # Reset payout for today
         user_row[PARAMETERS.USER_MAX_POSITION] = 0
         for j in range(PARAMETERS.USER_ALL_TIME_CURRENCY+1, len(user_row)):

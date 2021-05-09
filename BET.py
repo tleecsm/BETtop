@@ -16,8 +16,8 @@ import PARAMETERS
 import MESSAGE
 import IRS
 
-client = discord.Client()
-
+intents = discord.Intents().all()
+client = discord.Client(intents=intents, guild_subscriptions=True)
 
 @client.event
 async def on_ready():
@@ -35,8 +35,11 @@ async def daily_tasks():
     while True:
         try:
             # target_time = tomorrow at midnight
+            """
             target_time = datetime.datetime.utcnow().replace(
                 hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
+            """
+            target_time = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
             current_time = datetime.datetime.utcnow()
             time_to_midnight = target_time - current_time
             time_to_midnight = time_to_midnight.total_seconds()
