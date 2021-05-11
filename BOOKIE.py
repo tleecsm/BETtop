@@ -1,7 +1,7 @@
 import PARAMETERS
 import RESPONSE
 import csv
-from os import path
+from os import path, listdir
 
 
 async def handler(message):
@@ -171,7 +171,85 @@ async def resolve(message):
 
 
 async def check(message):
-    pass
+    message_split = message.content.split()
+    if len(message_split) < 2:
+        return
+    if len(message_split) == 2:
+        # Special case, return all bets
+        await check_all(message)
+        return
+    bet_name = message_split[2]
+
+    if not check_bet_status(message, bet_name):
+        return
+
+    bet = []
+    with open(f'BETS/{bet_name}.csv', newline='') as form:
+        bet = list(csv.reader(form, delimiter=','))
+
+    message_fields = []
+    stances = ''
+    for stance in bet[0][2:]:
+        stances += f'{stance}\n'
+    message_field = {'name':f'Betting Stances Available:',
+                     'value':stances,
+                     'inline':False}
+    message_fields.append(message_field)
+    for user_row in bet[1:]:
+        username = message.guild.get_member(int(user_row[0]))
+        user_stance = None
+        for stance in user_row[2:]:
+            if stance is not None:
+                user_stance = stance
+        value = user_row[1]
+        message_field = {'name':f'{username}',
+                         'value':f'Stance: {user_stance}\nBet: {value}',
+                         'inline':True}
+        message_fields.append(message_field)
+    await RESPONSE.send_embedded_reply(message,
+                                       title=f'{bet_name}',
+                                       description=f"An overview for {bet_name}",
+                                       fields=message_fields)
+
+
+async def check_all(message):
+    message_split = message.content.split()
+    all_bets = listdir('./BETS')
+    all_bets.remove('BET_TEMPLATE.csv')
+    open_bets = {}
+    closed_bets = {}
+    for bet_name in all_bets:
+        bet = []
+        with open(f'BETS/{bet_name}.csv', newline='') as form:
+            bet = list(csv.reader(form, delimiter=','))
+        if 'RESOLVED' in bet[0]:
+            continue
+        elif 'CLOSED' in bet[0]:
+            closed_bets[bet_name] = bet
+        else:
+            open_bets[bet_name] = bet
+    message_fields = []
+    # Handle printing the open bets first
+    for bet_name in open_bets:
+        bet = open_bets[bet_name]
+        stances = ''
+        for stance in bet[0][2:]:
+            stances += f'{stance} '
+        message_field = {'name':f'{bet_name}',
+                         'value':f'Stances:\n{stances}',
+                         'inline':False}
+        message_fields.append(message_field)
+    # Handle printing the open bets first
+    for bet_name in closed_bets:
+        bet = closed_bets[bet_name]
+        message_field = {'name':f'{bet_name}',
+                         'value':f'Betting on {bet_name} has been closed.',
+                         'inline':False}
+        message_fields.append(message_field)
+    await RESPONSE.send_embedded_reply(message,
+                                       title=f'CURRENT BETS',
+                                       description=f"An overview of all outstanding bets",
+                                       fields=message_fields)
 
 
 async def close(message):
