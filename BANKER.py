@@ -29,7 +29,7 @@ async def all_time(message):
     unsorted_users = []
     for user_row in IRS_form:
         user = user_row[PARAMETERS.USER_ID_POSITION]
-        currency = user_row[PARAMETERS.USER_ALL_TIME_CURRENCY]
+        currency = int(user_row[PARAMETERS.USER_ALL_TIME_CURRENCY])
         unsorted_users.append((user,currency))
     pass
     sorted_users = sorted(unsorted_users, key=lambda tup: tup[1], reverse=True)
@@ -60,7 +60,7 @@ async def current(message):
     unsorted_users = []
     for user_row in IRS_form:
         user = user_row[PARAMETERS.USER_ID_POSITION]
-        currency = user_row[PARAMETERS.USER_CURRENCY_POSITION]
+        currency = int(user_row[PARAMETERS.USER_CURRENCY_POSITION])
         unsorted_users.append((user,currency))
     sorted_users = sorted(unsorted_users, key=lambda tup: tup[1], reverse=True)
     message_fields = []
