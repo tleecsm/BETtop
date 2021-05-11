@@ -1,4 +1,5 @@
 import PARAMETERS
+import RESPONSE
 import csv
 
 
@@ -81,13 +82,19 @@ async def watch_channel(message):
         IRS_writer = csv.writer(form, delimiter=',')
         IRS_writer.writerows(IRS_form)
 
-    current_channel_string = ''
+    message_fields = []
+    channels = ''
     for channel in IRS_form[0][PARAMETERS.USER_ALL_TIME_CURRENCY+1:]:
-        current_channel_string += f'<#{channel}>'
+        channels += f'<#{channel}>\n'
+    message_field = {'name':f'Currently Watching:',
+                     'value':channels,
+                     'inline':False}
+    message_fields.append(message_field)
 
-    await message.channel.send(f'UPDATED MY WATCHLIST.  ' + 
-                               f'I AM CURRENTLY WATCHING THESE CHANNELS:\n' +
-                               current_channel_string)
+    await RESPONSE.send_embedded_reply(message, 
+                                       title='WATCHLIST UPDATED',
+                                       description='Channel added successfully',
+                                       fields=message_fields)
 
 
 async def forget_channel(message):
@@ -112,13 +119,19 @@ async def forget_channel(message):
         IRS_writer = csv.writer(form, delimiter=',')
         IRS_writer.writerows(IRS_form)
 
-    current_channel_string = ''
+    message_fields = []
+    channels = ''
     for channel in IRS_form[0][PARAMETERS.USER_ALL_TIME_CURRENCY+1:]:
-        current_channel_string += f'<#{channel}>'
+        channels += f'<#{channel}>\n'
+    message_field = {'name':f'Currently Watching:',
+                     'value':channels,
+                     'inline':False}
+    message_fields.append(message_field)
 
-    await message.channel.send(f'UPDATED MY WATCHLIST.  ' + 
-                               f'I AM CURRENTLY WATCHING THESE CHANNELS:\n' +
-                               current_channel_string)
+    await RESPONSE.send_embedded_reply(message, 
+                                       title='WATCHLIST UPDATED',
+                                       description='Channel removed successfully!',
+                                       fields=message_fields)
 
 
 async def enroll(message):
@@ -143,7 +156,9 @@ async def enroll(message):
         IRS_writer = csv.writer(form, delimiter=',')
         IRS_writer.writerows(IRS_form)
 
-    await message.channel.send(f'YOUR ACCOUNT HAS BEEN OPENED.')
+    await RESPONSE.send_embedded_reply(message, 
+                                       title='ENROLLMENT SUCCESSFUL',
+                                       description="Your account has been opened!")
 
 def daily_management():
     # This function handles all daily tasks (run at UTC Midnight)
