@@ -94,10 +94,14 @@ async def wallet(message):
     IRS_form = []
     with open('IRS_FORM.csv', newline='') as form:
         IRS_form = list(csv.reader(form, delimiter=','))
+    user_found = False
     for user_row in IRS_form:
         if user_id in user_row:
+            user_found = True
             user_currency = user_row[PARAMETERS.USER_CURRENCY_POSITION]
             legacy_currency = user_row[PARAMETERS.USER_ALL_TIME_CURRENCY]
+    if not user_found:
+        return
     message_fields = [{'name':f'Current {PARAMETERS.CURRENCY_NAME}',
                        'value':user_currency,
                        'inline':False},
