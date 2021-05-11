@@ -89,7 +89,7 @@ async def account(message):
 
 
 async def wallet(message):
-    user_id = str(message.author.id) 
+    user_id = str(message.author.id)
     username = message.guild.get_member(message.author.id).display_name
     IRS_form = []
     with open('IRS_FORM.csv', newline='') as form:
