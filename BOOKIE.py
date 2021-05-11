@@ -1,6 +1,7 @@
 import PARAMETERS
 import RESPONSE
 import csv
+from os import path
 
 
 async def handler(message):
@@ -44,6 +45,8 @@ async def bet(message):
         await RESPONSE.send_embedded_reply(message,
                                            title='BET CANNOT BE PLACED',
                                            description=f"Bet value must be a positive integer!")
+        return
+    if not check_bet_status(message, bet_name):
         return
     stance = message_split[4]
     bet = []
@@ -104,7 +107,67 @@ async def bet(message):
 
 
 async def resolve(message):
-    pass
+    message_split = message.content.split()
+    if len(message_split) < 4:
+        return
+    bet_name = message_split[2]
+    winning_stance = message_split[3]
+
+    if not check_bet_status(message, bet_name, check_closed=False):
+        return
+
+    bet = []
+    with open(f'BETS/{bet_name}.csv', newline='') as form:
+        bet = list(csv.reader(form, delimiter=','))
+    IRS_form = []
+    with open('IRS_FORM.csv', newline='') as form:
+        IRS_form = list(csv.reader(form, delimiter=','))
+
+    if winning_stance not in bet[0]:
+        await RESPONSE.send_embedded_reply(message,
+                                           title='BET CANNOT BE RESOLVED',
+                                           description=f"{winning_stance} is not a valid stance in this bet!")
+
+    winning_users = {}  # key: user_id (str), val: value bet (int)
+    total_pool = 0
+    winning_pool = 0
+    for user_row in bet:
+        if user_row[0] == 'User' or len(user_row) < 2:
+            # this is a header or CLOSED row
+            continue
+        if winning_stance in user_row:
+            winning_users[user_row[0]] = int(user_row[1])
+            winning_pool += int(user_row[1])
+        total_pool += int(user_row[1])
+    odds = winning_pool/total_pool
+
+    message_fields = []
+    for user_row in IRS_form:
+        if user_row[PARAMETERS.USER_ID_POSITION] in winning_users:
+            bet_value = winning_users[user_row[PARAMETERS.USER_ID_POSITION]]
+            winnings = int(bet_value/odds)
+            user_row[PARAMETERS.USER_CURRENCY_POSITION] = int(user_row[PARAMETERS.USER_CURRENCY_POSITION]) + winnings
+            user_row[PARAMETERS.USER_ALL_TIME_CURRENCY] = int(user_row[PARAMETERS.USER_ALL_TIME_CURRENCY]) + winnings
+            username = message.guild.get_member(int(user_row[PARAMETERS.USER_ID_POSITION]))
+            message_field = {'name':f'{username}',
+                             'value':f'Bet {bet_value} {PARAMETERS.CURRENCY_NAME} and won {winnings} {PARAMETERS.CURRENCY_NAME}!',
+                             'inline':False}
+            message_fields.append(message_field)
+    await RESPONSE.send_embedded_reply(message,
+                                       title='BET RESOLVED',
+                                       description=f"{bet_name} has been resolved with {winning_stance} as the outcome!",
+                                       fields=message_fields)
+
+    # Lock this bet
+    bet = ['RESOLVED'] + bet
+
+    with open('IRS_FORM.csv', 'w', newline='') as form:
+        IRS_writer = csv.writer(form, delimiter=',')
+        IRS_writer.writerows(IRS_form)
+
+    with open(f'BETS/{bet_name}.csv', 'w', newline='') as form:
+        bet_writer = csv.writer(form, delimiter=',')
+        bet_writer.writerows(bet)
 
 
 async def check(message):
@@ -117,6 +180,31 @@ async def close(message):
 
 async def delete(message):
     pass
+
+
+async def check_bet_status(message, bet_name, check_closed=True):
+    # Returns true if bet is open
+    # Returns false otherwise
+    bet = []
+    if not path.exists(f'BETS/{bet_name}.csv'):
+        await RESPONSE.send_embedded_reply(message,
+                                           title='BET CANNOT BE ACCESSED',
+                                           description=f"This bet does not exist!")
+        return False
+    with open(f'BETS/{bet_name}.csv', newline='') as form:
+        bet = list(csv.reader(form, delimiter=','))
+    if len(bet[0]) == 1:
+        if 'RESOLVED' in bet[0]:
+            await RESPONSE.send_embedded_reply(message,
+                                               title='BET CANNOT BE ACCESSED',
+                                               description=f"This bet has already been resolved!")
+            return False 
+        elif 'CLOSED' in bet[0] and check_closed:
+            await RESPONSE.send_embedded_reply(message,
+                                               title='BET CANNOT BE ACCESSED',
+                                               description=f"This bet has already been closed!")
+            return False
+    return True
 
 
 BOOKIE_COMMANDS = {
