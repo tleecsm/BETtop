@@ -36,7 +36,7 @@ def parameters_sanitary():
     EXPECTED_PARAMETERS['USER_CURRENCY_POSITION'] = None
     EXPECTED_PARAMETERS['USER_MAX_POSITION'] = None
     EXPECTED_PARAMETERS['USER_ALL_TIME_CURRENCY'] = None
-    
+
     if len(EXPECTED_PARAMETERS) != len(parameters):
         return False
     for i in range(len(parameters)):

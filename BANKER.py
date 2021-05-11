@@ -83,9 +83,9 @@ async def current(message):
 async def account(message):
     message_split = message.content.split()
     if len(message_split) < 3:
-            return
+        return
     if message_split[2] in ACCOUNT_COMMANDS:
-            await ACCOUNT_COMMANDS[message_split[2]](message)  
+        await ACCOUNT_COMMANDS[message_split[2]](message)  
 
 
 async def wallet(message):
