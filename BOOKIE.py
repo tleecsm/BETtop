@@ -4,7 +4,7 @@ import csv
 
 
 async def handler(message):
-    if message.content.startswith(f'{PARAMETERS.COMMAND_PREFIX}BANKER'):
+    if message.content.startswith(f'{PARAMETERS.COMMAND_PREFIX}BOOKIE'):
         message_split = message.content.split()
         if len(message_split) < 2:
             return
@@ -28,6 +28,9 @@ async def make(message):
     with open(f'BETS/{bet_name}.csv', 'w', newline='') as form:
         template_writer = csv.writer(form, delimiter=',')
         template_writer.writerows(template)
+    await RESPONSE.send_embedded_reply(message,
+                                           title='BET CREATED',
+                                           description=f"Bet has been created successfully!")
 
 
 async def bet(message):
@@ -108,9 +111,19 @@ async def check(message):
     pass
 
 
+async def close(message):
+    pass
+
+
+async def delete(message):
+    pass
+
+
 BOOKIE_COMMANDS = {
         'MAKE': make,
         'BET': bet,
         'RESOLVE': resolve,
-        'CHECK':check
+        'CHECK':check,
+        'CLOSE':close,
+        'DELETE':delete
 }
