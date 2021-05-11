@@ -1,4 +1,5 @@
 import PARAMETERS
+import RESPONSE
 import csv
 
 
@@ -32,13 +33,21 @@ async def all_time(message):
         unsorted_users.append((user,currency))
     pass
     sorted_users = sorted(unsorted_users, key=lambda tup: tup[1], reverse=True)
-    output_string = ''
+    message_fields = []
     for user_tuple in sorted_users:
+        message_field = {}
         user_id = int(user_tuple[0])
         user_currency = user_tuple[1]
         username = message.guild.get_member(user_id)
-        output_string += f'{username} with {user_currency} lifetime {PARAMETERS.CURRENCY_NAME}\n'
-    await message.channel.send(output_string)
+        output_string = f'{user_currency} lifetime {PARAMETERS.CURRENCY_NAME}'
+        message_field['name'] = username
+        message_field['value'] = output_string
+        message_field['inline'] = False
+        message_fields.append(message_field)
+    await RESPONSE.send_embedded_reply(message, 
+                                       title='ALL-TIME LEADERBOARDS',
+                                       description='Who has made the most currency in the history of the server?',
+                                       fields=message_fields)
 
 
 async def current(message):
