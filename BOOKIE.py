@@ -46,7 +46,7 @@ async def bet(message):
                                            title='BET CANNOT BE PLACED',
                                            description=f"Bet value must be a positive integer!")
         return
-    if not check_bet_status(message, bet_name):
+    if not await check_bet_status(message, bet_name):
         return
     stance = message_split[4]
     bet = []
@@ -113,7 +113,7 @@ async def resolve(message):
     bet_name = message_split[2]
     winning_stance = message_split[3]
 
-    if not check_bet_status(message, bet_name, check_closed=False):
+    if not await check_bet_status(message, bet_name, check_closed=False):
         return
 
     bet = []
@@ -127,6 +127,7 @@ async def resolve(message):
         await RESPONSE.send_embedded_reply(message,
                                            title='BET CANNOT BE RESOLVED',
                                            description=f"{winning_stance} is not a valid stance in this bet!")
+        return
 
     winning_users = {}  # key: user_id (str), val: value bet (int)
     total_pool = 0
@@ -159,7 +160,7 @@ async def resolve(message):
                                        fields=message_fields)
 
     # Lock this bet
-    bet = ['RESOLVED'] + bet
+    bet = [['RESOLVED']] + bet
 
     with open('IRS_FORM.csv', 'w', newline='') as form:
         IRS_writer = csv.writer(form, delimiter=',')
@@ -180,7 +181,7 @@ async def check(message):
         return
     bet_name = message_split[2]
 
-    if not check_bet_status(message, bet_name):
+    if not await check_bet_status(message, bet_name):
         return
 
     bet = []
@@ -199,7 +200,7 @@ async def check(message):
         username = message.guild.get_member(int(user_row[0]))
         user_stance = None
         for stance in user_row[2:]:
-            if stance is not None:
+            if stance:
                 user_stance = stance
         value = user_row[1]
         message_field = {'name':f'{username}',
@@ -218,7 +219,8 @@ async def check_all(message):
     all_bets.remove('BET_TEMPLATE.csv')
     open_bets = {}
     closed_bets = {}
-    for bet_name in all_bets:
+    for bet_file in all_bets:
+        bet_name = bet_file[:-4]
         bet = []
         with open(f'BETS/{bet_name}.csv', newline='') as form:
             bet = list(csv.reader(form, delimiter=','))
@@ -234,9 +236,9 @@ async def check_all(message):
         bet = open_bets[bet_name]
         stances = ''
         for stance in bet[0][2:]:
-            stances += f'{stance} '
+            stances += f'{stance} | '
         message_field = {'name':f'{bet_name}',
-                         'value':f'Stances:\n{stances}',
+                         'value':f'Stances:\n{stances[:-2]}',
                          'inline':False}
         message_fields.append(message_field)
     # Handle printing the open bets first
